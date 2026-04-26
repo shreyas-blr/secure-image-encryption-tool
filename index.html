@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CipherVault — Image Encryption Tool</title>
+    <meta name="description" content="A powerful image encryption and decryption tool using XOR cipher with pixel shuffling. Secure your images with password-based encryption.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- Header -->
+    <header id="app-header">
+        <div class="header-left">
+            <div class="logo" id="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#logo-grad)"/>
+                    <path d="M16 7L16 11M16 21L16 25M7 16H11M21 16H25M9.5 9.5L12.5 12.5M19.5 19.5L22.5 22.5M22.5 9.5L19.5 12.5M12.5 19.5L9.5 22.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="16" cy="16" r="4" stroke="white" stroke-width="2"/>
+                    <defs>
+                        <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32">
+                            <stop stop-color="#6366f1"/>
+                            <stop offset="1" stop-color="#a855f7"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">CipherVault</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="mode-toggle-wrapper" id="mode-toggle-wrapper">
+                <button class="mode-btn active" id="btn-encrypt" data-mode="encrypt">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Encrypt
+                </button>
+                <button class="mode-btn" id="btn-decrypt" data-mode="decrypt">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                    Decrypt
+                </button>
+                <div class="mode-slider" id="mode-slider"></div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- Upload Section -->
+        <section class="upload-section" id="upload-section">
+            <div class="upload-card glass-card" id="upload-card">
+                <div class="upload-zone" id="upload-zone">
+                    <input type="file" id="file-input" accept="image/*" hidden>
+                    <div class="upload-icon-wrapper">
+                        <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <h2>Drop your image here</h2>
+                    <p>or <span class="upload-browse">browse files</span></p>
+                    <div class="upload-formats">Supports PNG, JPG, BMP, TIFF, WebP</div>
+                </div>
+
+                <!-- Image Preview (hidden initially) -->
+                <div class="image-preview" id="image-preview" style="display:none;">
+                    <div class="preview-header">
+                        <span class="preview-label">Selected Image</span>
+                        <button class="btn-remove" id="btn-remove" aria-label="Remove image">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="preview-img-container">
+                        <img id="preview-image" alt="Preview" />
+                    </div>
+                    <div class="preview-info" id="preview-info"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls Section -->
+        <section class="controls-section" id="controls-section">
+            <div class="controls-card glass-card">
+                <!-- Password Input -->
+                <div class="control-group">
+                    <label class="control-label" for="password-input">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Encryption Password
+                    </label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password-input" placeholder="Enter a strong password..." autocomplete="off">
+                        <button class="btn-eye" id="btn-eye" aria-label="Toggle password visibility">
+                            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                    <!-- Password strength meter -->
+                    <div class="strength-meter" id="strength-meter">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strength-fill"></div>
+                        </div>
+                        <span class="strength-label" id="strength-label"></span>
+                    </div>
+                    <div class="password-tips" id="password-tips">
+                        <div class="tip" id="tip-length"><span class="tip-icon">○</span> At least 8 characters</div>
+                        <div class="tip" id="tip-upper"><span class="tip-icon">○</span> Uppercase letter</div>
+                        <div class="tip" id="tip-lower"><span class="tip-icon">○</span> Lowercase letter</div>
+                        <div class="tip" id="tip-number"><span class="tip-icon">○</span> Number</div>
+                        <div class="tip" id="tip-special"><span class="tip-icon">○</span> Special character</div>
+                    </div>
+                </div>
+
+                <!-- Key Hash Preview -->
+                <div class="control-group">
+                    <label class="control-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        SHA-256 Key Preview
+                    </label>
+                    <div class="key-hash" id="key-hash">Enter password to generate key...</div>
+                </div>
+
+                <!-- Process Button -->
+                <button class="btn-process" id="btn-process" disabled>
+                    <span class="btn-text" id="btn-text">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Encrypt Image
+                    </span>
+                    <span class="btn-loading" id="btn-loading" style="display:none">
+                        <div class="spinner"></div>
+                        Processing...
+                    </span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Processing Indicator -->
+        <div class="processing-overlay" id="processing-overlay" style="display:none">
+            <div class="processing-card glass-card">
+                <div class="processing-animation">
+                    <div class="proc-ring"></div>
+                    <div class="proc-ring proc-ring-2"></div>
+                    <div class="proc-ring proc-ring-3"></div>
+                    <svg class="proc-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <h3 id="processing-title">Encrypting Image...</h3>
+                <div class="processing-steps">
+                    <div class="proc-step" id="step-1">
+                        <div class="proc-step-icon">⏳</div>
+                        <span>Reading pixel data</span>
+                    </div>
+                    <div class="proc-step" id="step-2">
+                        <div class="proc-step-icon">⏳</div>
+                        <span>Generating SHA-256 key</span>
+                    </div>
+                    <div class="proc-step" id="step-3">
+                        <div class="proc-step-icon">⏳</div>
+                        <span>Applying XOR cipher</span>
+                    </div>
+                    <div class="proc-step" id="step-4">
+                        <div class="proc-step-icon">⏳</div>
+                        <span>Shuffling pixels</span>
+                    </div>
+                    <div class="proc-step" id="step-5">
+                        <div class="proc-step-icon">⏳</div>
+                        <span>Saving result</span>
+                    </div>
+                </div>
+                <div class="processing-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span class="progress-text" id="progress-text">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section (hidden initially) -->
+        <section class="results-section" id="results-section" style="display:none">
+            <!-- Comparison Slider -->
+            <div class="comparison-card glass-card">
+                <div class="comparison-header">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+                        Before vs After Comparison
+                    </h2>
+                    <div class="comparison-labels">
+                        <span class="label-original">Original</span>
+                        <span class="label-result" id="label-result">Encrypted</span>
+                    </div>
+                </div>
+                <div class="comparison-slider" id="comparison-slider">
+                    <div class="comparison-img comparison-before" id="comparison-before">
+                        <img id="compare-original" alt="Original">
+                        <span class="img-tag">ORIGINAL</span>
+                    </div>
+                    <div class="comparison-img comparison-after" id="comparison-after">
+                        <img id="compare-result" alt="Result">
+                        <span class="img-tag" id="result-tag">ENCRYPTED</span>
+                    </div>
+                    <div class="slider-handle" id="slider-handle">
+                        <div class="slider-line"></div>
+                        <div class="slider-grip">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3l-5 9 5 9"/><path d="M16 3l5 9-5 9"/></svg>
+                        </div>
+                        <div class="slider-line"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details + Histogram Row -->
+            <div class="details-row">
+                <!-- Image Details Panel -->
+                <div class="details-card glass-card">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                        Image Details
+                    </h3>
+                    <div class="details-tabs">
+                        <button class="tab-btn active" data-tab="original-details">Original</button>
+                        <button class="tab-btn" data-tab="result-details">Result</button>
+                    </div>
+                    <div class="details-content" id="original-details">
+                        <div class="detail-grid" id="original-detail-grid"></div>
+                    </div>
+                    <div class="details-content" id="result-details" style="display:none">
+                        <div class="detail-grid" id="result-detail-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Processing Stats -->
+                <div class="stats-card glass-card">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Processing Stats
+                    </h3>
+                    <div class="stats-grid" id="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-time">—</div>
+                            <div class="stat-label">Processing Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-mode">—</div>
+                            <div class="stat-label">Operation</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-pixels">—</div>
+                            <div class="stat-label">Pixels Processed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-entropy-change">—</div>
+                            <div class="stat-label">Entropy Change</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histogram -->
+            <div class="histogram-card glass-card">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+                    Color Distribution
+                </h3>
+                <div class="histogram-tabs">
+                    <button class="hist-tab active" data-channel="r">Red</button>
+                    <button class="hist-tab" data-channel="g">Green</button>
+                    <button class="hist-tab" data-channel="b">Blue</button>
+                </div>
+                <div class="histogram-container">
+                    <div class="histogram-pair">
+                        <div class="histogram-wrapper">
+                            <span class="hist-label">Original</span>
+                            <canvas id="hist-original" width="512" height="180"></canvas>
+                        </div>
+                        <div class="histogram-wrapper">
+                            <span class="hist-label" id="hist-result-label">Encrypted</span>
+                            <canvas id="hist-result" width="512" height="180"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Section -->
+            <div class="download-section">
+                <button class="btn-download" id="btn-download">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Result
+                </button>
+                <button class="btn-new" id="btn-new">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Process Another
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
